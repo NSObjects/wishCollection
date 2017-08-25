@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
-	"doc/utility"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +11,7 @@ import (
 	"net/url"
 	"time"
 	"wishCollection/models"
+	"wishCollection/utility"
 )
 
 var stop bool
@@ -69,6 +69,7 @@ ReRegister:
 		goto ReRegister
 	}
 }
+
 //13672
 func getWishIdFromFeed(categoryId string, user models.User, wishId string) {
 	c := time.NewTicker(time.Minute * 2)
