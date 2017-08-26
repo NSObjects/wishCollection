@@ -84,7 +84,9 @@ ReRegister:
 
 //13672
 func getWishIdFromFeed(categoryId string, user models.User, wishId string) {
-
+	if collectionTime <= 0 {
+		collectionTime = 120
+	}
 	c := time.NewTicker(collectionTime)
 	go TimeOut(c)
 	fmt.Println(wishId)
