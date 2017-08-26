@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -25,9 +24,9 @@ func init() {
 }
 
 func main() {
-	go requestWishId()
-	http.HandleFunc("/", CollectionHandler)
-	log.Fatal(http.ListenAndServe(":1234", nil))
+	requestWishId()
+	l := make(chan int)
+	<-l
 
 }
 
@@ -51,6 +50,7 @@ func CollectionHandler(w http.ResponseWriter, r *http.Request) {
 type CollectionJSON struct {
 	Code int    `json:"code"`
 	Id   string `json:"id"`
+	Rate int    `json:"rate"`
 }
 
 func requestWishId() {
@@ -88,6 +88,10 @@ func requestWishId() {
 		return
 	}
 
+	if cJSON.Rate > 0 {
+		collectionTime = time.Second * time.Duration(cJSON.Rate)
+	}
+
 ReRegister:
 	if user, err := models.RegisterUser(); err == nil {
 		getWishIdFromFeed("tabbed_feed_latest", user, cJSON.Id)
@@ -98,6 +102,7 @@ ReRegister:
 
 //13672
 func getWishIdFromFeed(categoryId string, user models.User, wishId string) {
+
 	c := time.NewTicker(collectionTime)
 	go TimeOut(c)
 	fmt.Println(wishId)
