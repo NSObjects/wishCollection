@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 	"wishCollection/models"
 	"wishCollection/utility"
@@ -27,23 +26,6 @@ func main() {
 	requestWishId()
 	l := make(chan int)
 	<-l
-
-}
-
-func CollectionHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	t := r.URL.Query()["time"]
-	if len(t) > 0 {
-		if ct, err := strconv.Atoi(t[0]); err == nil {
-			if ct > 0 {
-				collectionTime = time.Second * time.Duration(ct)
-			}
-		} else {
-			w.Write([]byte(err.Error()))
-		}
-	} else {
-		w.Write([]byte(fmt.Sprintf("time err %d", t)))
-	}
 
 }
 
