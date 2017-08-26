@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 	"wishCollection/models"
 	"wishCollection/utility"
@@ -16,11 +18,33 @@ import (
 
 var stop bool
 
-func main() {
+var collectionTime time.Duration
 
-	requestWishId()
-	l := make(chan int)
-	<-l
+func init() {
+	collectionTime = time.Minute * 2
+}
+
+func main() {
+	go requestWishId()
+	http.HandleFunc("/", CollectionHandler)
+	log.Fatal(http.ListenAndServe(":1234", nil))
+
+}
+
+func CollectionHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	t := r.URL.Query()["time"]
+	if len(t) > 0 {
+		if ct, err := strconv.Atoi(t[0]); err == nil {
+			if ct > 0 {
+				collectionTime = time.Second * time.Duration(ct)
+			}
+		} else {
+			w.Write([]byte(err.Error()))
+		}
+	} else {
+		w.Write([]byte(fmt.Sprintf("time err %d", t)))
+	}
 
 }
 
@@ -59,6 +83,8 @@ func requestWishId() {
 	}
 
 	if cJSON.Code != 0 {
+		time.Sleep(10 * time.Minute)
+		requestWishId()
 		return
 	}
 
@@ -72,7 +98,7 @@ ReRegister:
 
 //13672
 func getWishIdFromFeed(categoryId string, user models.User, wishId string) {
-	c := time.NewTicker(time.Minute * 2)
+	c := time.NewTicker(collectionTime)
 	go TimeOut(c)
 	fmt.Println(wishId)
 	page := 0
