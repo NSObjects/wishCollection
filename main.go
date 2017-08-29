@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -15,9 +16,22 @@ import (
 )
 
 var stop bool
+var runing bool
 
 func main() {
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if runing == false {
+			requestWishId()
+		}
+		w.Write([]byte("ok"))
+	})
+
+	s := &http.Server{
+		Addr: ":7758",
+	}
+
+	log.Fatal(s.ListenAndServe())
 	requestWishId()
 	l := make(chan int)
 	<-l
@@ -31,7 +45,7 @@ type CollectionJSON struct {
 
 func requestWishId() {
 	// 获取指定id (GET http://localhost:3384/api/collection)
-
+	runing = true
 	// Create client
 	client := &http.Client{}
 
@@ -59,6 +73,7 @@ func requestWishId() {
 	}
 
 	if cJSON.Code != 0 {
+		runing = false
 		return
 	}
 
