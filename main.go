@@ -18,8 +18,14 @@ import (
 var stop bool
 var runing bool
 
-func main() {
+var collectionTime time.Duration
 
+func init() {
+	collectionTime = time.Minute * 2
+}
+
+func main() {
+	go requestWishId()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if runing == false {
 			requestWishId()
@@ -32,15 +38,13 @@ func main() {
 	}
 
 	log.Fatal(s.ListenAndServe())
-	requestWishId()
-	l := make(chan int)
-	<-l
 
 }
 
 type CollectionJSON struct {
 	Code int    `json:"code"`
 	Id   string `json:"id"`
+	Rate int    `json:"rate"`
 }
 
 func requestWishId() {
@@ -77,6 +81,10 @@ func requestWishId() {
 		return
 	}
 
+	if cJSON.Rate > 0 {
+		collectionTime = time.Second * time.Duration(cJSON.Rate)
+	}
+
 ReRegister:
 	if user, err := models.RegisterUser(); err == nil {
 		getWishIdFromFeed("tabbed_feed_latest", user, cJSON.Id)
@@ -87,7 +95,10 @@ ReRegister:
 
 //13672
 func getWishIdFromFeed(categoryId string, user models.User, wishId string) {
-	c := time.NewTicker(time.Minute * 2)
+	if collectionTime <= 0 {
+		collectionTime = 120
+	}
+	c := time.NewTicker(collectionTime)
 	go TimeOut(c)
 	fmt.Println(wishId)
 	page := 0
