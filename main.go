@@ -54,7 +54,7 @@ func requestWishId() {
 	client := &http.Client{}
 
 	// Create request
-	req, err := http.NewRequest("GET", "http://108.61.149.158:2596/api/collection", nil)
+	req, err := http.NewRequest("GET", "http://45.76.220.102:2596/api/collection", nil)
 
 	// Fetch Request
 	resp, err := client.Do(req)
